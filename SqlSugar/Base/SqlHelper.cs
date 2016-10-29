@@ -359,7 +359,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
-        public List<T> GetList<T>(string sql, object pars)
+        public IEnumerable<T> GetList<T>(string sql, object pars)
         {
             return GetList<T>(sql, SqlSugarTool.GetParameters(pars));
         }
@@ -371,9 +371,9 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public List<T> GetList<T>(string sql, params SqlParameter[] pars)
+        public IEnumerable<T> GetList<T>(string sql, params SqlParameter[] pars)
         {
-            var reval = SqlSugarTool.DataReaderToList<T>(typeof(T), GetReader(sql, pars), null).ToList();
+            var reval = SqlSugarTool.DataReaderToList<T>(typeof(T), GetReader(sql, pars), null);
             return reval;
         }
 

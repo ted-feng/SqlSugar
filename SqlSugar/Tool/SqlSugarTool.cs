@@ -55,6 +55,7 @@ namespace SqlSugar
                 {
                     yield return model;
                 }
+                yield break;
             }
             //值类型
             else if (type.IsValueType || type == SqlSugarTool.StringType)
@@ -63,6 +64,7 @@ namespace SqlSugar
                 {
                     yield return model;
                 }
+                yield break;
             }
             //数组类型
             else if (type.IsArray)
@@ -71,6 +73,7 @@ namespace SqlSugar
                 {
                     yield return model;
                 }
+                yield break;
             }
 
 
