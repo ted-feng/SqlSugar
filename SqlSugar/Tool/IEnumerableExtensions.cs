@@ -107,8 +107,7 @@ namespace SqlSugar
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="sortField"></param>
-        /// <param name="orderByType"></param>
+        /// <param name="orderByTypes"></param>
         /// <returns></returns>
         public static IOrderedEnumerable<T> OrderBy<T>(this IEnumerable<T> list, List<OrderByDictionary> orderByTypes)
         {
@@ -125,13 +124,13 @@ namespace SqlSugar
             }
             return reval;
         }
+        
         /// <summary>
         /// 排序
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="sortField"></param>
-        /// <param name="orderByType"></param>
+        /// <param name="orderByTypes"></param>
         /// <returns></returns>
         public static IOrderedEnumerable<T> ThenBy<T>(this IOrderedEnumerable<T> list, List<OrderByDictionary> orderByTypes)
         {
@@ -153,8 +152,7 @@ namespace SqlSugar
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="sortField"></param>
-        /// <param name="orderByType"></param>
+        /// <param name="orderByTypes"></param>
         /// <returns></returns>
         public static IOrderedEnumerable<T> OrderByDataRow<T>(this IEnumerable<T> list, List<OrderByDictionary> orderByTypes) where T : DataRow
         {
@@ -184,10 +182,9 @@ namespace SqlSugar
         /// <summary>
         /// 排序
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="sortField"></param>
-        /// <param name="orderByType"></param>
+        /// <param name="orderByTypes"></param>
+        /// <param name="orderByUnqueField"></param>
         /// <returns></returns>
         public static List<DataRow> OrderByDataRow(this IEnumerable<DataRow> list, List<OrderByDictionary> orderByTypes, OrderByDictionary orderByUnqueField)
         {
@@ -218,8 +215,7 @@ namespace SqlSugar
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="sortField"></param>
-        /// <param name="orderByType"></param>
+        /// <param name="orderByTypes"></param>
         /// <returns></returns>
         public static IOrderedEnumerable<T> ThenByDataRow<T>(this IOrderedEnumerable<T> list, List<OrderByDictionary> orderByTypes) where T : DataRow
         {
@@ -244,8 +240,7 @@ namespace SqlSugar
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="sortField"></param>
-        /// <param name="orderByType"></param>
+        /// <param name="orderByTypes"></param>
         /// <returns></returns>
         public static IOrderedEnumerable<T> OrderByReverse<T>(this IEnumerable<T> list, List<OrderByDictionary> orderByTypes)
         {
@@ -262,13 +257,13 @@ namespace SqlSugar
             }
             return reval;
         }
+
         /// <summary>
         /// 排序
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="sortField"></param>
-        /// <param name="orderByType"></param>
+        /// <param name="orderByTypes"></param>
         /// <returns></returns>
         public static IOrderedEnumerable<T> ThenByReverse<T>(this IOrderedEnumerable<T> list, List<OrderByDictionary> orderByTypes)
         {
@@ -285,13 +280,13 @@ namespace SqlSugar
             return list;
         }
 
+       
         /// <summary>
         /// 排序
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="sortField"></param>
-        /// <param name="orderByType"></param>
+        /// <param name="orderByTypes"></param>
         /// <returns></returns>
         public static IOrderedEnumerable<T> OrderByDataRowReverse<T>(this IEnumerable<T> list, List<OrderByDictionary> orderByTypes) where T : DataRow
         {
@@ -313,8 +308,7 @@ namespace SqlSugar
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
-        /// <param name="sortField"></param>
-        /// <param name="orderByType"></param>
+        /// <param name="orderByTypes"></param>
         /// <returns></returns>
         public static IOrderedEnumerable<T> ThenByDataRowReverse<T>(this IOrderedEnumerable<T> list, List<OrderByDictionary> orderByTypes) where T : DataRow
         {

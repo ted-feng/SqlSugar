@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Data.SqlClient;
+using System.Linq.Expressions;
 
 namespace SqlSugar
 {
-
+    ///<summary>
     /// ** 描述：SqlSugar扩展工具类
     /// ** 创始时间：2015-7-19
     /// ** 修改时间：-
@@ -150,6 +151,49 @@ namespace SqlSugar
         internal static string GetSqlParameterNameNoParSymbol(this string name)
         {
             return SqlSugarTool.GetSqlParameterNameNoParSymbol(name);
+        }
+
+        /// <summary>
+        /// 数组条件筛选
+        /// </summary>
+        /// <param name="thisValue"></param>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        internal static string[] ArrayWhere(this string[] thisValue, Func<string, bool> expression)
+        {
+            if (thisValue == null) return null;
+            thisValue= thisValue.Where(expression).ToArray();
+            return thisValue;
+        }
+
+        /// <summary>
+        /// 数组添加元素
+        /// </summary>
+        /// <param name="thisValue"></param>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        internal static string[] ArrayAdd(this string[] thisValue, params string[] items)
+        {
+            if (thisValue == null) thisValue = new string[] { };
+            var reval= thisValue.ToList();
+            reval.AddRange(items);
+            thisValue = reval.ToArray();
+            return thisValue;
+        }
+
+        /// <summary>
+        /// 数组移除
+        /// </summary>
+        /// <param name="thisValue"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        internal static string[] ArrayRemove(this string[] thisValue, string item)
+        {
+            if (thisValue == null) thisValue = new string[] { };
+            var reval = thisValue.ToList();
+            reval.Remove(item);
+            thisValue= reval.ToArray();
+            return thisValue;
         }
     }
 }

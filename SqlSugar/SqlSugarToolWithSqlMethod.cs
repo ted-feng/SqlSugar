@@ -80,7 +80,7 @@ namespace SqlSugar
                     //    sbSql.Insert(0, "SELECT " + queryable.SelectValue.GetSelectFiles() + " FROM ( ");
                     //}
                     //sbSql.Append(") t WHERE t.row_index>" + (queryable.Skip));
-                    strSql = string.Format("select {0} from {1}{2}{3} where 1=1 {4} and [{5}]{6}([{5}]) from (select top {7} [{5}] from {1}{2}{3} where 1=1 {4}{8}) as tblTmp) {8}", queryable.SelectValue.GetSelectFiles(), tableName.GetTranslationSqlName(), joinInfo, withNoLock, string.Join("", queryable.WhereValue), queryable.OrderByField, strTmp, queryable.Skip, strOrder);
+                    strSql = string.Format("select {0} from {1}{2}{3} where 1=1 and [{5}]{6}([{5}]) from (select top {7} [{5}] from {1}{2}{3} where 1=1 {4}{9}) as tblTmp) {4} {8} {9}", queryable.SelectValue.GetSelectFiles(), tableName.GetTranslationSqlName(), joinInfo, withNoLock, string.Join("", queryable.WhereValue), queryable.OrderByField, strTmp, queryable.Skip, queryable.GroupByValue.GetGroupBy(), strOrder);
                 }
                 else if (queryable.Skip != null && queryable.Take != null)
                 {
@@ -90,7 +90,7 @@ namespace SqlSugar
                     }
                     else
                     {
-                        strSql = string.Format("select top {0} {1} from {2}{3}{4} where 1=1 {5} and [{6}]{7}([{6}]) from (select top {8} [{6}] from {2}{3}{4} where 1=1 {5}{9}) as tblTmp) {9}", queryable.Take, queryable.SelectValue.GetSelectFiles(), tableName.GetTranslationSqlName(), joinInfo, withNoLock, string.Join("", queryable.WhereValue), queryable.OrderByField, strTmp, queryable.Skip, strOrder);
+                        strSql = string.Format("select top {0} {1} from {2}{3}{4} where 1=1 and [{6}]{7}([{6}]) from (select top {8} [{6}] from {2}{3}{4} where 1=1 {5}{10}) as tblTmp) {5} {9} {10}", queryable.Take, queryable.SelectValue.GetSelectFiles(), tableName.GetTranslationSqlName(), joinInfo, withNoLock, string.Join("", queryable.WhereValue), queryable.OrderByField, strTmp, queryable.Skip, queryable.GroupByValue.GetGroupBy(), strOrder);
                     }
                     sbSql.Clear();
                     sbSql.Append(strSql);
@@ -147,7 +147,7 @@ namespace SqlSugar
                 }
                 else
                 {
-                    strSql = string.Format("select top {0} {1} {2} where 1=1 {3} and [{4}]{5}([{4}]) from (select top {6} [{4}] {2} where 1=1 {3}{7}) as tblTmp) {7}", take, fileds, sbSql, string.Join("", sqlable.Where), orderByFieldValue, strTmp, skip, strOrder);
+                    strSql = string.Format("select top {0} {1} {2} where 1=1 and [{4}]{5}([{4}]) from (select top {6} [{4}] {2} where 1=1 {3}{7}) as tblTmp) {3} {7}", take, fileds, sbSql, string.Join("", sqlable.Where), orderByFieldValue, strTmp, skip, strOrder);
                 }
                 sbSql.Clear();
                 sbSql.Append(strSql);
@@ -234,14 +234,7 @@ namespace SqlSugar
             string key = "GetIdentityKeyByTableName" + tableName;
             var cm = CacheManager<List<KeyValue>>.GetInstance();
             List<KeyValue> identityInfo = null;
-            if (cm.ContainsKey(key))
-            {
-                identityInfo = cm[key];
-                return identityInfo;
-            }
-            else
-            {
-                string sql = string.Format(@"
+            string sql = string.Format(@"
                             declare @Table_name varchar(60)
                             set @Table_name = '{0}';
 
@@ -259,6 +252,13 @@ namespace SqlSugar
 
                             Where upper(so.name) = upper(@Table_name)
          ", tableName);
+            if (cm.ContainsKey(key))
+            {
+                identityInfo = cm[key];
+                return identityInfo;
+            }
+            else
+            {
                 var isLog = db.IsEnableLogEvent;
                 db.IsEnableLogEvent = false;
                 var dt = db.GetDataTable(sql);
@@ -390,7 +390,6 @@ namespace SqlSugar
                 case "datetime":
                     reval = "dateTime";
                     break;
-                case "single":
                 case "decimal":
                     reval = "decimal";
                     break;
@@ -460,7 +459,7 @@ namespace SqlSugar
         /// <summary>
         /// 获取转释后的表名和列名
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="tableName"></param>
         /// <returns></returns>
         internal static string GetTranslationSqlName(string name)
         {

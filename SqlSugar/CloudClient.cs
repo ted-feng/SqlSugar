@@ -57,7 +57,7 @@ namespace SqlSugar
         /// 使用说明:sqlSugar.Insert(List《entity》);
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="entity">插入对象</param>
+        /// <param name="entities">插入对象</param>
         /// <param name="isIdentity">主键是否为自增长,true可以不填,false必填</param>
         /// <returns></returns>
         public List<object> InsertRange<T>(List<T> entities, bool isIdentity = true) where T : class
@@ -116,7 +116,7 @@ namespace SqlSugar
         /// 使用说明:Delete《T》(new int[]{1,2,3}) 或者  Delete《T》(3)
         /// </summary>
         /// <param name="whereIn"> delete ids </param>
-        public bool Delete<T, FiledType>(params FiledType[] whereIn)
+        public bool Delete<T, FiledType>(params FiledType[] whereIn) where T:class
         {
             var tasks = new Task<bool>[configList.Count];
             for (int i = 0; i < tasks.Length; i++)
@@ -139,7 +139,7 @@ namespace SqlSugar
         /// Delete《T》(it=>it.id=100) 或者Delete《T》(3)
         /// </summary>
         /// <param name="expression">筛选表达式</param>
-        public bool Delete<T>(System.Linq.Expressions.Expression<Func<T, bool>> expression)
+        public bool Delete<T>(System.Linq.Expressions.Expression<Func<T, bool>> expression)where T:class
         {
             var tasks = new Task<bool>[configList.Count];
             for (int i = 0; i < tasks.Length; i++)
@@ -162,8 +162,9 @@ namespace SqlSugar
         /// 注意：whereIn 主键集合  
         /// 使用说明:Delete《T》(new int[]{1,2,3}) 或者  Delete《T》(3)
         /// </summary>
+        ///<param name="field">  </param>
         /// <param name="whereIn"> delete ids </param>
-        public bool FalseDelete<T, FiledType>(string field, params FiledType[] whereIn)
+        public bool FalseDelete<T, FiledType>(string field, params FiledType[] whereIn)where T:class
         {
             var tasks = new Task<bool>[configList.Count];
             for (int i = 0; i < tasks.Length; i++)
@@ -187,7 +188,7 @@ namespace SqlSugar
         /// </summary>
         /// <param name="field">更新删除状态字段</param>
         /// <param name="expression">筛选表达式</param>
-        public bool FalseDelete<T>(string field, System.Linq.Expressions.Expression<Func<T, bool>> expression)
+        public bool FalseDelete<T>(string field, System.Linq.Expressions.Expression<Func<T, bool>> expression) where T:class
         {
             var tasks = new Task<bool>[configList.Count];
             for (int i = 0; i < tasks.Length; i++)
@@ -508,6 +509,7 @@ namespace SqlSugar
         /// 使用说明:sqlSugar.Update《T》(rowObj,whereObj);
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <typeparam name="FiledType">主键类型</typeparam>
         /// <param name="rowObj">new T(){name="张三",sex="男"}或者new {name="张三",sex="男"}</param>
         /// <param name="whereIn">new int[]{1,2,3}</param>
         /// <returns></returns>
@@ -578,6 +580,11 @@ namespace SqlSugar
                 this.configList = null;
             }
         }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        /// <param name="isAll"></param>
         public void Dispose(bool isAll)
         {
             lock (this.dbsLock)
@@ -701,7 +708,12 @@ namespace SqlSugar
         /// 获取Where比较条件
         /// </summary>
         /// <param name="whereCompare"></param>
+        /// <param name="orderByTypes"></param>
         /// <param name="sampleRow"></param>
+        /// <param name="unqueField"></param>
+        /// <param name="unqueValue"></param>
+        /// <param name="isReverse"></param>
+        /// <param name="isEqual"></param>
         /// <returns></returns>
         private string GetWhereCompare(string whereCompare, List<OrderByDictionary> orderByTypes, DataRow sampleRow, string unqueField, string unqueValue, bool isReverse = false, bool isEqual = false)
         {

@@ -20,7 +20,7 @@ namespace SqlSugar
         /// Form
         /// </summary>
         /// <param name="sqlable"></param>
-        /// <param name="modelObj">表名</param>
+        /// <param name="tableName">表名</param>
         /// <param name="shortName">表名简写</param>
         /// <returns></returns>
         public static Sqlable From(this Sqlable sqlable, string tableName, string shortName)
@@ -33,7 +33,6 @@ namespace SqlSugar
         /// Form
         /// </summary>
         /// <param name="sqlable"></param>
-        /// <param name="modelObj">表名</param>
         /// <param name="shortName">表名简写</param>
         /// <returns></returns>
         public static Sqlable From<T>(this Sqlable sqlable, string shortName)
@@ -47,6 +46,8 @@ namespace SqlSugar
         /// Join
         /// </summary>
         /// <param name="sqlable"></param>
+        /// <param name="tableName">表名字符串</param>
+        /// <param name="shortName">表名简写</param>
         /// <param name="leftFiled">join左边连接字段</param>
         /// <param name="RightFiled">join右边连接字段</param>
         /// <param name="type">join类型</param>
@@ -61,6 +62,7 @@ namespace SqlSugar
         /// Join
         /// </summary>
         /// <param name="sqlable"></param>
+        /// <param name="shortName">表名简写</param>
         /// <param name="leftFiled">join左边连接字段</param>
         /// <param name="RightFiled">join右边连接字段</param>
         /// <param name="type">join类型</param>
@@ -95,7 +97,7 @@ namespace SqlSugar
         /// <returns></returns>
         public static Sqlable OrderBy(this Sqlable sqlable, string orderBy)
         {
-            sqlable.OrderBy = "ORDER BY " + orderBy + " ";
+            sqlable.OrderBy ="ORDER BY "+ orderBy+" ";
             return sqlable;
         }
 
@@ -122,7 +124,7 @@ namespace SqlSugar
         /// <returns></returns>
         public static Sqlable GroupBy(this Sqlable sqlable, string groupBy)
         {
-            sqlable.GroupBy = "GROUP BY " + groupBy + " ";
+            sqlable.GroupBy ="GROUP BY "+ groupBy+" ";
             return sqlable;
         }
 
@@ -133,6 +135,8 @@ namespace SqlSugar
         /// <param name="sqlable"></param>
         /// <param name="fileds">查询列</param>
         /// <param name="whereObj">SQL参数,例如:new{id=1,name="张三"}</param>
+        /// <param name="preSql">在这语句之前可插入自定义SQL</param>
+        /// <param name="nextSql">在这语句之后可以插自定义SQL</param>
         /// <returns></returns>
         public static List<T> SelectToList<T>(this Sqlable sqlable, string fileds, object whereObj = null, string preSql = null, string nextSql = null) where T : class
         {
@@ -231,13 +235,12 @@ namespace SqlSugar
         /// <returns></returns>
         public static string SelectToJson(this Sqlable sqlable, string fileds, object whereObj = null)
         {
-            return JsonConverter.DataTableToJson(SelectToDataTable(sqlable, fileds, whereObj), sqlable.DB.SerializerDateFormat);
+            return JsonConverter.DataTableToJson(SelectToDataTable(sqlable, fileds, whereObj),sqlable.DB.SerializerDateFormat);
         }
 
         /// <summary>
         /// 设置查询列执行查询，并且将结果集转成dynamic
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="sqlable"></param>
         /// <param name="fileds">查询列</param>
         /// <param name="whereObj">SQL参数,例如:new{id=1,name="张三"}</param>
@@ -250,7 +253,6 @@ namespace SqlSugar
         /// <summary>
         /// 生成查询结果对应的实体类字符串
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="sqlable"></param>
         /// <param name="fileds">查询列</param>
         /// <param name="whereObj">SQL参数,例如:new{id=1,name="张三"}</param>
@@ -266,6 +268,9 @@ namespace SqlSugar
         /// 反回记录数
         /// </summary>
         /// <param name="sqlable"></param>
+        /// <param name="whereObj">匿名参数 (例如：new{id=1,name="张三"})</param>
+        /// <param name="preSql">在这语句之前可插入自定义SQL</param>
+        /// <param name="nextSql">在这语句之后可以插自定义SQL</param>
         /// <returns></returns>
         public static int Count(this Sqlable sqlable, object whereObj = null, string preSql = null, string nextSql = null)
         {
@@ -334,13 +339,12 @@ namespace SqlSugar
             }
         }
 
-
+   
 
 
         /// <summary>
         /// 设置查询列和分页参数执行查询，并且将结果集转成DataTable
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="sqlable"></param>
         /// <param name="fileds">查询列</param>
         /// <param name="orderByFiled">Order By字段，可以多个</param>
@@ -355,7 +359,7 @@ namespace SqlSugar
             {
                 if (pageIndex == 0) pageIndex = 1;
                 Check.ArgumentNullException(sqlable.Sql, "语法错误，SelectToSql必需要在.Form后面使用");
-                SqlSugarTool.GetSqlableSql(sqlable, fileds, orderByFiled, pageIndex, pageSize, sbSql);
+                 SqlSugarTool.GetSqlableSql(sqlable, fileds, orderByFiled, pageIndex, pageSize, sbSql);
                 var sqlParams = GetAllParas(sqlable, whereObj);
                 var reval = sqlable.DB.GetDataTable(sbSql.ToString(), sqlParams);
                 return reval;
@@ -372,7 +376,7 @@ namespace SqlSugar
             }
         }
 
-
+        
         /// <summary>
         /// 设置查询列和分页参数执行查询，并且将结果集转成json
         /// </summary>
@@ -383,11 +387,11 @@ namespace SqlSugar
         /// <param name="pageSize">每页显示数量</param>
         /// <param name="whereObj">SQL参数,例如:new{id=1,name="张三"}</param>
         /// <returns></returns>
-        public static string SelectToPageJson(this Sqlable sqlable, string fileds, string orderByFiled, int pageIndex, int pageSize, object whereObj = null)
+        public static string SelectToPageJson(this Sqlable sqlable, string fileds, string orderByFiled, int pageIndex, int pageSize, object whereObj = null) 
         {
-            return JsonConverter.DataTableToJson(SelectToPageTable(sqlable, fileds, orderByFiled, pageIndex, pageSize, whereObj), sqlable.DB.SerializerDateFormat);
+           return  JsonConverter.DataTableToJson(SelectToPageTable(sqlable,fileds,orderByFiled,pageIndex,pageSize,whereObj),sqlable.DB.SerializerDateFormat);
         }
-
+            
         /// <summary>
         /// 设置查询列和分页参数执行查询，并且将结果集转成dynamic
         /// </summary>
@@ -398,9 +402,9 @@ namespace SqlSugar
         /// <param name="pageSize">每页显示数量</param>
         /// <param name="whereObj">SQL参数,例如:new{id=1,name="张三"}</param>
         /// <returns></returns>
-        public static dynamic SelectToPageDynamic(this Sqlable sqlable, string fileds, string orderByFiled, int pageIndex, int pageSize, object whereObj = null)
+        public static dynamic SelectToPageDynamic(this Sqlable sqlable, string fileds, string orderByFiled, int pageIndex, int pageSize, object whereObj = null) 
         {
-            return JsonConverter.ConvertJson(SelectToPageJson(sqlable, fileds, orderByFiled, pageIndex, pageSize, whereObj));
+           return  JsonConverter.ConvertJson(SelectToPageJson(sqlable,fileds,orderByFiled,pageIndex,pageSize,whereObj));
         }
 
 

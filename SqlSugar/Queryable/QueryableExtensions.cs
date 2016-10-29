@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Data;
 using System.Data.SqlClient;
+using System.Collections;
 
 namespace SqlSugar
 {
@@ -144,6 +145,44 @@ namespace SqlSugar
             return queryable;
         }
 
+        /// <summary>
+        /// 根据主键查询
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable"></param>
+        /// <param name="pkValues">主键集合</param>
+        /// <returns></returns>
+        public static Queryable<T> In<T>(this Queryable<T> queryable, params object[] pkValues)
+        {
+            Check.Exception(pkValues == null || pkValues.Length == 0, "In.pkValues的Count不能为0");
+            var type=pkValues[0].GetType();
+            if (type!=SqlSugarTool.IntType&&type!=SqlSugarTool.GuidType&&type.FullName.IsCollectionsList())
+            {
+                var newList = new List<object>();
+                foreach (var item in (IEnumerable)pkValues[0])
+                {
+                    newList.Add(item);
+                }
+                pkValues = newList.ToArray();
+                Check.Exception(pkValues == null || pkValues.Length == 0, "In.pkValues的Count不能为0");
+            }
+            var pkName = SqlSugarTool.GetPrimaryKeyByTableName(queryable.DB, queryable.TableName);
+            queryable.OrderByValue = null;
+            Check.ArgumentNullException(pkName, "In(params object[]PkValue)查询表中不存在主键,请换In的其它重载方法。");
+            return queryable.In<T, string>(pkName, pkValues.Select(it => it.ToString()).ToArray());
+        }
+
+        /// <summary>
+        /// 根据主键查询
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable"></param>
+        /// <param name="pkValue">主键</param>
+        /// <returns></returns>
+        public static T InSingle<T>(this Queryable<T> queryable, object pkValue)
+        {
+            return queryable.In(pkValue).ToList().SingleOrDefault();
+        }
 
         /// <summary>
         /// 条件筛选 ( 例如：InFieldName 为 id, inValues 值为 new string[]{"1" ,"2"} 生成的SQL就是 id in('1','2')  )
@@ -159,7 +198,7 @@ namespace SqlSugar
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
             ResolveExpress re = new ResolveExpress(queryable.WhereIndex);
-            queryable.WhereValue.Add(string.Format(" AND {0} IN ({1})", InFieldName, inValues.ToJoinSqlInVal()));
+            queryable.WhereValue.Add(string.Format(" AND {0} IN ({1})", InFieldName.GetTranslationSqlName(), inValues.ToJoinSqlInVal()));
             return queryable;
         }
 
@@ -244,7 +283,7 @@ namespace SqlSugar
                 field = re.GetExpressionRightFieldByNT(expression, queryable.DB);
             }
             var pre = queryable.OrderByValue.IsValuable() ? "," : "";
-            queryable.OrderByValue += pre + field + " " + type.ToString().ToUpper();
+            queryable.OrderByValue += pre + field.GetTranslationSqlName() + " " + type.ToString().ToUpper();
             return queryable;
         }
 
@@ -262,7 +301,7 @@ namespace SqlSugar
             ResolveExpress re = new ResolveExpress();
             var field = queryable.OrderByField = re.GetExpressionRightFieldByNT(expression, queryable.DB);
             var pre = queryable.OrderByValue.IsValuable() ? "," : "";
-            queryable.OrderByValue += pre + field + " " + type.ToString().ToUpper();
+            queryable.OrderByValue += pre + field.GetTranslationSqlName() + " " + type.ToString().ToUpper();
             return queryable;
         }
 
@@ -540,7 +579,7 @@ namespace SqlSugar
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
-            ResolveSelect.GetResult<TResult>(expStr, reval);
+            ResolveSelect.GetResult<TResult>(expStr, reval,expression);
             return reval;
         }
 
@@ -570,7 +609,7 @@ namespace SqlSugar
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
-            ResolveSelect.GetResult<TResult>(expStr, reval);
+            ResolveSelect.GetResult<TResult>(expStr, reval,expression);
             return reval;
         }
 
@@ -601,7 +640,7 @@ namespace SqlSugar
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
-            ResolveSelect.GetResult<TResult>(expStr, reval);
+            ResolveSelect.GetResult<TResult>(expStr, reval,expression);
             return reval;
         }
 
@@ -633,7 +672,7 @@ namespace SqlSugar
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
-            ResolveSelect.GetResult<TResult>(expStr, reval);
+            ResolveSelect.GetResult<TResult>(expStr, reval,expression);
             return reval;
         }
 
@@ -663,12 +702,12 @@ namespace SqlSugar
             };
             if (queryable.JoinTableValue.IsValuable())
             {
-                ResolveSelect.GetResult<TResult>(expStr, reval);
+                ResolveSelect.GetResult<TResult>(expStr, reval,expression);
             }
             else
             {
                 reval.SelectValue = expStr;
-                ResolveSelect.GetResult<TResult>(reval);
+                ResolveSelect.GetResult<TResult>(reval,expression);
             }
             return reval;
         }
@@ -1048,6 +1087,7 @@ namespace SqlSugar
         /// <param name="tableName">表名（可是以表或也可以是SQL语句加括号）</param>
         /// <param name="shortName">表名简写</param>
         /// <param name="onWhere">on后面的条件</param>
+        /// <param name="whereObj">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <param name="type">Join的类型</param>
         /// <returns>Queryable</returns>
         public static Queryable<T> JoinTable<T>(this Queryable<T> queryable, string tableName, string shortName, string onWhere, object whereObj, JoinType type = JoinType.LEFT)
