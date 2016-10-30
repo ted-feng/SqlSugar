@@ -30,12 +30,12 @@ namespace SqlSugar
             {
                 if (isConvet)
                 {
-                    var memberExpr =((UnaryExpression)lambda.Body).Operand as MemberExpression;
-                    reval= memberExpr.Member.Name;
+                    var memberExpr = ((UnaryExpression)lambda.Body).Operand as MemberExpression;
+                    reval = memberExpr.Member.Name;
                 }
                 else//isMember
                 {
-                    reval= (lambda.Body as MemberExpression).Member.Name;
+                    reval = (lambda.Body as MemberExpression).Member.Name;
                 }
             }
             catch (Exception)
@@ -75,24 +75,24 @@ namespace SqlSugar
                 if (isConvet)
                 {
                     var memberExpr = ((UnaryExpression)lambda.Body).Operand as MemberExpression;
-                    reval= memberExpr.ToString();
+                    reval = memberExpr.Member.Name.ToString();
                 }
                 else//isMember
                 {
-                    reval= lambda.Body.ToString();
+                    reval = lambda.Body.ToString();
                 }
             }
             catch (Exception)
             {
-                 throw new SqlSugarException(FileldErrorMessage);
+                throw new SqlSugarException(FileldErrorMessage);
             }
             if (DB != null && DB.IsEnableAttributeMapping && DB._mappingColumns.IsValuable())
             {
-                if (DB._mappingColumns.Any(it => reval.EndsWith("."+it.Key)))
+                if (DB._mappingColumns.Any(it => reval.EndsWith("." + it.Key)))
                 {
                     var preName = reval.Split('.').First();
                     var dbName = DB._mappingColumns.Single(it => reval.EndsWith("." + it.Key)).Value;
-                    return preName+"."+dbName;
+                    return preName + "." + dbName;
                 }
             }
             return reval;

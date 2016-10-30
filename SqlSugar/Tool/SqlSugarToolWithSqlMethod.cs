@@ -80,7 +80,7 @@ namespace SqlSugar
                     //    sbSql.Insert(0, "SELECT " + queryable.SelectValue.GetSelectFiles() + " FROM ( ");
                     //}
                     //sbSql.Append(") t WHERE t.row_index>" + (queryable.Skip));
-                    strSql = string.Format("select {0} from {1}{2}{3} where 1=1 {4} and [{5}]{6}([{5}]) from (select top {7} [{5}] from {1}{2}{3} where 1=1 {4}{8}) as tblTmp) {8}", queryable.SelectValue.GetSelectFiles(), tableName.GetTranslationSqlName(), joinInfo, withNoLock, string.Join("", queryable.WhereValue), queryable.OrderByField, strTmp, queryable.Skip, strOrder);
+                    strSql = string.Format("select {0} from {1}{2}{3} where 1=1 {4} and {5}{6}({5}) from (select top {7} {5} from {1}{2}{3} where 1=1 {4}{8}) as tblTmp) {8}", queryable.SelectValue.GetSelectFiles(), tableName.GetTranslationSqlName(), joinInfo, withNoLock, string.Join("", queryable.WhereValue), queryable.OrderByField, strTmp, queryable.Skip, strOrder);
                 }
                 else if (queryable.Skip != null && queryable.Take != null)
                 {
@@ -90,7 +90,7 @@ namespace SqlSugar
                     }
                     else
                     {
-                        strSql = string.Format("select top {0} {1} from {2}{3}{4} where 1=1 {5} and [{6}]{7}([{6}]) from (select top {8} [{6}] from {2}{3}{4} where 1=1 {5}{9}) as tblTmp) {9}", queryable.Take, queryable.SelectValue.GetSelectFiles(), tableName.GetTranslationSqlName(), joinInfo, withNoLock, string.Join("", queryable.WhereValue), queryable.OrderByField, strTmp, queryable.Skip, strOrder);
+                        strSql = string.Format("select top {0} {1} from {2}{3}{4} where 1=1 {5} and {6}{7}({6}) from (select top {8} {6} from {2}{3}{4} where 1=1 {5}{9}) as tblTmp) {9}", queryable.Take, queryable.SelectValue.GetSelectFiles(), tableName.GetTranslationSqlName(), joinInfo, withNoLock, string.Join("", queryable.WhereValue), queryable.OrderByField, strTmp, queryable.Skip, strOrder);
                     }
                     sbSql.Clear();
                     sbSql.Append(strSql);
@@ -147,7 +147,7 @@ namespace SqlSugar
                 }
                 else
                 {
-                    strSql = string.Format("select top {0} {1} {2} where 1=1 {3} and [{4}]{5}([{4}]) from (select top {6} [{4}] {2} where 1=1 {3}{7}) as tblTmp) {7}", take, fileds, sbSql, string.Join("", sqlable.Where), orderByFieldValue, strTmp, skip, strOrder);
+                    strSql = string.Format("select top {0} {1} {2} where 1=1 {3} and {4}{5}({4}) from (select top {6} {4} {2} where 1=1 {3}{7}) as tblTmp) {7}", take, fileds, sbSql, string.Join("", sqlable.Where), orderByFieldValue, strTmp, skip, strOrder);
                 }
                 sbSql.Clear();
                 sbSql.Append(strSql);
@@ -388,6 +388,9 @@ namespace SqlSugar
                     reval = "string";
                     break;
                 case "datetime":
+                    reval = "dateTime";
+                    break;
+                case "datetime2":
                     reval = "dateTime";
                     break;
                 case "single":
