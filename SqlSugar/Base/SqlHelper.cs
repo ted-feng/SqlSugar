@@ -14,7 +14,7 @@ namespace SqlSugar
     /// ** 作者：sunkaixuan
     /// ** 使用说明：
     /// </summary>
-    public class SqlHelper : IDisposable
+    public abstract class SqlHelper : IDisposable
     {
         private SqlConnection _sqlConnection;
         private SqlTransaction _tran = null;
@@ -50,39 +50,22 @@ namespace SqlSugar
         ///     var list = db.Queryable&lt;Student&gt;().Where("id=@id", new { id=Request["id"] }).ToList();
         /// </summary>
         public bool IsGetPageParas = false;
+
+
         /// <summary>
         /// 初始化 SqlHelper 类的新实例
         /// </summary>
         /// <param name="connectionString"></param>
-        public SqlHelper(string connectionString)
+        public  SqlHelper(string connectionString)
         {
             _sqlConnection = new SqlConnection(connectionString);
-        }
-        /// <summary>
-        /// 检查数据库连接，若未连接，连接数据库
-        /// </summary>
-        /// <exception cref="Expection">连接失败</exception>
-        private void CheckConnect()
-        {
-            try
-            {
-                if (_sqlConnection.State != ConnectionState.Open)
-                {
-                    _sqlConnection.Open();
-                }
-            }
-            catch (Exception cnErr)
-            {
-                Dispose();
-                throw new Exception("连接数据库失败", cnErr);
-            }
         }
         /// <summary>
         /// 获取当前数据库连接对象
         /// </summary>
         /// <returns></returns>
 
-        public SqlConnection GetConnection()
+        public virtual SqlConnection GetConnection()
         {
             return _sqlConnection;
         }
@@ -90,16 +73,16 @@ namespace SqlSugar
         /// <summary>
         /// 开始事务
         /// </summary>
-        public void BeginTran()
+        public virtual void BeginTran()
         {
+            CheckConnect();
             _tran = _sqlConnection.BeginTransaction();
         }
-
         /// <summary>
         /// 开始事务
         /// </summary>
         /// <param name="iso">指定事务行为</param>
-        public void BeginTran(IsolationLevel iso)
+        public virtual void BeginTran(IsolationLevel iso)
         {
             CheckConnect();
             _tran = _sqlConnection.BeginTransaction(iso);
@@ -108,7 +91,7 @@ namespace SqlSugar
         /// 开始事务
         /// </summary>
         /// <param name="transactionName"></param>
-        public void BeginTran(string transactionName)
+        public virtual void BeginTran(string transactionName)
         {
             CheckConnect();
             _tran = _sqlConnection.BeginTransaction(transactionName);
@@ -118,7 +101,7 @@ namespace SqlSugar
         /// </summary>
         /// <param name="iso">指定事务行为</param>
         /// <param name="transactionName"></param>
-        public void BeginTran(IsolationLevel iso, string transactionName)
+        public virtual void BeginTran(IsolationLevel iso, string transactionName)
         {
             CheckConnect();
             _tran = _sqlConnection.BeginTransaction(iso, transactionName);
@@ -127,8 +110,9 @@ namespace SqlSugar
         /// <summary>
         /// 回滚事务
         /// </summary>
-        public void RollbackTran()
+        public virtual void RollbackTran()
         {
+            CheckConnect();
             if (_tran != null)
             {
                 _tran.Rollback();
@@ -139,8 +123,9 @@ namespace SqlSugar
         /// <summary>
         /// 提交事务
         /// </summary>
-        public void CommitTran()
+        public virtual void CommitTran()
         {
+            CheckConnect();
             if (_tran != null)
             {
                 _tran.Commit();
@@ -154,7 +139,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
-        public string GetString(string sql, object pars)
+        public virtual string GetString(string sql, object pars)
         {
             return GetString(sql, SqlSugarTool.GetParameters(pars));
         }
@@ -165,7 +150,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public string GetString(string sql, params SqlParameter[] pars)
+        public virtual string GetString(string sql, params SqlParameter[] pars)
         {
             return Convert.ToString(GetScalar(sql, pars));
         }
@@ -176,7 +161,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
-        public int GetInt(string sql, object pars)
+        public virtual int GetInt(string sql, object pars)
         {
             return GetInt(sql, SqlSugarTool.GetParameters(pars));
         }
@@ -187,7 +172,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public int GetInt(string sql, params SqlParameter[] pars)
+        public virtual int GetInt(string sql, params SqlParameter[] pars)
         {
             return Convert.ToInt32(GetScalar(sql, pars));
         }
@@ -198,7 +183,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public Double GetDouble(string sql, params SqlParameter[] pars)
+        public virtual Double GetDouble(string sql, params SqlParameter[] pars)
         {
             return Convert.ToDouble(GetScalar(sql, pars));
         }
@@ -209,7 +194,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public decimal GetDecimal(string sql, params SqlParameter[] pars)
+        public virtual decimal GetDecimal(string sql, params SqlParameter[] pars)
         {
             return Convert.ToDecimal(GetScalar(sql, pars));
         }
@@ -220,7 +205,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public DateTime GetDateTime(string sql, params SqlParameter[] pars)
+        public virtual DateTime GetDateTime(string sql, params SqlParameter[] pars)
         {
             return Convert.ToDateTime(GetScalar(sql, pars));
         }
@@ -231,7 +216,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
-        public object GetScalar(string sql, object pars)
+        public virtual object GetScalar(string sql, object pars)
         {
             return GetScalar(sql, SqlSugarTool.GetParameters(pars));
         }
@@ -242,7 +227,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public object GetScalar(string sql, params SqlParameter[] pars)
+        public virtual object GetScalar(string sql, params SqlParameter[] pars)
         {
             ExecLogEvent(sql, pars, true);
             SqlCommand sqlCommand = new SqlCommand(sql, _sqlConnection);
@@ -254,14 +239,14 @@ namespace SqlSugar
             sqlCommand.CommandTimeout = this.CommandTimeOut;
             if (pars != null)
                 sqlCommand.Parameters.AddRange(pars);
-            if (IsGetPageParas)
+            if (this.IsGetPageParas)
             {
                 SqlSugarToolExtensions.RequestParasToSqlParameters(sqlCommand.Parameters);
             }
-			CheckConnect();
+            CheckConnect();
             object scalar = sqlCommand.ExecuteScalar();
             scalar = (scalar == null ? 0 : scalar);
-            if (IsClearParameters)
+            if (this.IsClearParameters)
                 sqlCommand.Parameters.Clear();
             ExecLogEvent(sql, pars, false);
             return scalar;
@@ -273,7 +258,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
-        public int ExecuteCommand(string sql, object pars)
+        public virtual int ExecuteCommand(string sql, object pars)
         {
             return ExecuteCommand(sql, SqlSugarTool.GetParameters(pars));
         }
@@ -284,27 +269,25 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public int ExecuteCommand(string sql, params SqlParameter[] pars)
+        public virtual int ExecuteCommand(string sql, params SqlParameter[] pars)
         {
             ExecLogEvent(sql, pars, true);
             SqlCommand sqlCommand = new SqlCommand(sql, _sqlConnection);
-            sqlCommand.CommandType = CommandType;
+            sqlCommand.CommandType = this.CommandType;
             sqlCommand.CommandTimeout = this.CommandTimeOut;
             if (_tran != null)
             {
                 sqlCommand.Transaction = _tran;
             }
             if (pars != null)
-            {
                 sqlCommand.Parameters.AddRange(pars);
-            }
-            if (IsGetPageParas)
+            if (this.IsGetPageParas)
             {
                 SqlSugarToolExtensions.RequestParasToSqlParameters(sqlCommand.Parameters);
             }
             CheckConnect();
             int count = sqlCommand.ExecuteNonQuery();
-            if (IsClearParameters)
+            if (this.IsClearParameters)
                 sqlCommand.Parameters.Clear();
             ExecLogEvent(sql, pars, false);
             return count;
@@ -316,7 +299,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
-        public SqlDataReader GetReader(string sql, object pars)
+        public virtual SqlDataReader GetReader(string sql, object pars)
         {
             return GetReader(sql, SqlSugarTool.GetParameters(pars));
         }
@@ -327,11 +310,11 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public SqlDataReader GetReader(string sql, params SqlParameter[] pars)
+        public virtual SqlDataReader GetReader(string sql, params SqlParameter[] pars)
         {
             ExecLogEvent(sql, pars, true);
             SqlCommand sqlCommand = new SqlCommand(sql, _sqlConnection);
-            sqlCommand.CommandType = CommandType;
+            sqlCommand.CommandType = this.CommandType;
             sqlCommand.CommandTimeout = this.CommandTimeOut;
             if (_tran != null)
             {
@@ -339,14 +322,13 @@ namespace SqlSugar
             }
             if (pars != null)
                 sqlCommand.Parameters.AddRange(pars);
-            if (IsGetPageParas)
+            if (this.IsGetPageParas)
             {
                 SqlSugarToolExtensions.RequestParasToSqlParameters(sqlCommand.Parameters);
             }
             CheckConnect();
             SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
-
-            if (IsClearParameters)
+            if (this.IsClearParameters)
                 sqlCommand.Parameters.Clear();
             ExecLogEvent(sql, pars, false);
             return sqlDataReader;
@@ -359,7 +341,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
-        public IEnumerable<T> GetList<T>(string sql, object pars)
+        public virtual IEnumerable<T> GetList<T>(string sql, object pars)
         {
             return GetList<T>(sql, SqlSugarTool.GetParameters(pars));
         }
@@ -371,7 +353,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public IEnumerable<T> GetList<T>(string sql, params SqlParameter[] pars)
+        public virtual IEnumerable<T> GetList<T>(string sql, params SqlParameter[] pars)
         {
             var reval = SqlSugarTool.DataReaderToList<T>(typeof(T), GetReader(sql, pars), null);
             return reval;
@@ -384,7 +366,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
-        public T GetSingle<T>(string sql, object pars)
+        public virtual T GetSingle<T>(string sql, object pars)
         {
             return GetSingle<T>(sql, SqlSugarTool.GetParameters(pars));
         }
@@ -396,7 +378,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public T GetSingle<T>(string sql, params SqlParameter[] pars)
+        public virtual T GetSingle<T>(string sql, params SqlParameter[] pars)
         {
             var reval = SqlSugarTool.DataReaderToList<T>(typeof(T), GetReader(sql, pars), null).Single();
             return reval;
@@ -408,7 +390,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
-        public DataTable GetDataTable(string sql, object pars)
+        public virtual DataTable GetDataTable(string sql, object pars)
         {
             return GetDataTable(sql, SqlSugarTool.GetParameters(pars));
         }
@@ -419,14 +401,14 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public DataTable GetDataTable(string sql, params SqlParameter[] pars)
+        public virtual DataTable GetDataTable(string sql, params SqlParameter[] pars)
         {
             ExecLogEvent(sql, pars, true);
             SqlDataAdapter _sqlDataAdapter = new SqlDataAdapter(sql, _sqlConnection);
-            _sqlDataAdapter.SelectCommand.CommandType = CommandType;
+            _sqlDataAdapter.SelectCommand.CommandType = this.CommandType;
             if (pars != null)
                 _sqlDataAdapter.SelectCommand.Parameters.AddRange(pars);
-            if (IsGetPageParas)
+            if (this.IsGetPageParas)
             {
                 SqlSugarToolExtensions.RequestParasToSqlParameters(_sqlDataAdapter.SelectCommand.Parameters);
             }
@@ -438,7 +420,7 @@ namespace SqlSugar
             CheckConnect();
             DataTable dt = new DataTable();
             _sqlDataAdapter.Fill(dt);
-            if (IsClearParameters)
+            if (this.IsClearParameters)
                 _sqlDataAdapter.SelectCommand.Parameters.Clear();
             ExecLogEvent(sql, pars, false);
             return dt;
@@ -449,7 +431,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public DataSet GetDataSetAll(string sql, object pars)
+        public virtual DataSet GetDataSetAll(string sql, object pars)
         {
             return GetDataSetAll(sql, SqlSugarTool.GetParameters(pars));
         }
@@ -459,7 +441,7 @@ namespace SqlSugar
         /// <param name="sql"></param>
         /// <param name="pars"></param>
         /// <returns></returns>
-        public DataSet GetDataSetAll(string sql, params SqlParameter[] pars)
+        public virtual DataSet GetDataSetAll(string sql, params SqlParameter[] pars)
         {
             ExecLogEvent(sql, pars, true);
             SqlDataAdapter _sqlDataAdapter = new SqlDataAdapter(sql, _sqlConnection);
@@ -467,26 +449,26 @@ namespace SqlSugar
             {
                 _sqlDataAdapter.SelectCommand.Transaction = _tran;
             }
-            if (IsGetPageParas)
+            if (this.IsGetPageParas)
             {
                 SqlSugarToolExtensions.RequestParasToSqlParameters(_sqlDataAdapter.SelectCommand.Parameters);
             }
             _sqlDataAdapter.SelectCommand.CommandTimeout = this.CommandTimeOut;
-            _sqlDataAdapter.SelectCommand.CommandType = CommandType;
+            _sqlDataAdapter.SelectCommand.CommandType = this.CommandType;
             if (pars != null)
                 _sqlDataAdapter.SelectCommand.Parameters.AddRange(pars);
-			CheckConnect();
+            CheckConnect();
             DataSet ds = new DataSet();
             _sqlDataAdapter.Fill(ds);
-            if (IsClearParameters)
+            if (this.IsClearParameters)
                 _sqlDataAdapter.SelectCommand.Parameters.Clear();
             ExecLogEvent(sql, pars, false);
             return ds;
         }
 
-        private void ExecLogEvent(string sql, SqlParameter[] pars, bool isStarting = true)
+        private  void ExecLogEvent(string sql, SqlParameter[] pars, bool isStarting = true)
         {
-            if (IsEnableLogEvent)
+            if (this.IsEnableLogEvent)
             {
                 Action<string, string> action = isStarting ? LogEventStarting : LogEventCompleted;
                 if (action != null)
@@ -497,7 +479,7 @@ namespace SqlSugar
                     }
                     else
                     {
-                        action(sql, JsonConverter.Serialize(pars.Select(it => new { key = it.ParameterName, value = it.Value })));
+                        action(sql, JsonConverter.Serialize(pars.Select(it => new { key = it.ParameterName, value = it.Value.ObjToString() })));
                     }
                 }
             }
@@ -505,7 +487,7 @@ namespace SqlSugar
         /// <summary>
         /// 释放数据库连接对象
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (_sqlConnection != null)
             {
@@ -516,6 +498,16 @@ namespace SqlSugar
                     _sqlConnection.Close();
                 }
                 _sqlConnection = null;
+            }
+        }
+        /// <summary>
+        /// 检查数据库连接，若未连接，连接数据库
+        /// </summary>
+        protected virtual void CheckConnect()
+        {
+            if (_sqlConnection.State != ConnectionState.Open)
+            {
+                _sqlConnection.Open();
             }
         }
     }

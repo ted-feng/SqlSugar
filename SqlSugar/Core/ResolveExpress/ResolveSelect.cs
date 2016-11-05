@@ -15,7 +15,7 @@ namespace SqlSugar
     /// ** qq：610262374 
     /// ** 使用说明：
     /// </summary>
-    internal class ResolveSelect
+    internal partial class ResolveSelect
     {
         /// <summary>
         /// 多表情况
@@ -43,7 +43,7 @@ namespace SqlSugar
             }
             if (reval.SelectValue.IsNullOrEmpty())
             {
-                throw new SqlSugarException("Select 解析失败 ", new { selectString = reval.SelectValue });
+                throw new SqlSugarException(ExpSelectValueIsNull, new { selectString = reval.SelectValue });
             }
             reval.SelectValue = reval.SelectValue.Replace("\"", "'");
             reval.SelectValue = reval.SelectValue.Replace("DateTime.Now", "GETDATE()");
@@ -62,10 +62,10 @@ namespace SqlSugar
             string errorFunName = null;
             if (expStr.IsValuable() && (expStr.Contains("+<>") || Regex.IsMatch(expStr, @"\.[a-z,A-Z,_]\w*\.[a-z,A-Z,_]\w*?(\,|\})")))
             {
-                throw new SqlSugarException("Select中的拉姆达表达式,不支持外部传参数,目前支持的写法 Where(\"1=1\",new {id=1}).Select(it=>{ id=\"" + SqlSugarTool.ParSymbol + "id\".ObjToInt()}");
+                throw new SqlSugarException(ExpNoSupportOutPars);
             }
             if(expStr.IsValuable()&&Regex.IsMatch(expStr, @"\+|\-|\*|\/")){
-                throw new SqlSugarException("Select中不支持变量的运算。");
+                throw new SqlSugarException(ExpNoSupportOperation);
             }
             string reg= @"(\.[a-z,A-Z,_]\w*?\(.*?\))|\=\s*[a-z,A-Z,_]\w*?\(.*?\)|\=\s*[a-z,A-Z,_]\w*?\(.*?\)|\=[a-z,A-Z,_]\w*.[a-z,A-Z,_]\w*.[a-z,A-Z,_]\w*";
             if (expStr.IsValuable() & Regex.IsMatch(expStr,reg))
@@ -87,7 +87,7 @@ namespace SqlSugar
                 }
                 if (errorNum > 0)
                 {
-                    throw new SqlSugarException("Select中不支持函数"+errorFunName);
+                    throw new SqlSugarException(string.Format(ExpNoSupportMethod,errorFunName));
                 }
             }
             return false;
@@ -119,7 +119,7 @@ namespace SqlSugar
             expStr = Regex.Replace(expStr, @"(?<=\=)[^\,]*?\.", "");
             if (reval.SelectValue.IsNullOrEmpty())
             {
-                throw new SqlSugarException("Select 解析失败 ", new { selectString = reval.SelectValue });
+                throw new SqlSugarException(ExpSelectValueIsNull, new { selectString = reval.SelectValue });
             }
             expStr = expStr.Replace("\"", "'");
             expStr = expStr.Replace("DateTime.Now", "GETDATE()");
@@ -190,11 +190,11 @@ namespace SqlSugar
             }
             if (selectStr.Contains(".ToString"))
             {
-                throw new SqlSugarException("Select中不支持ToString函数，请使用ObjectToString");
+                throw new SqlSugarException(ExpNoSupportToString);
             }
             if (selectStr.Contains("+<>"))
             {
-                throw new SqlSugarException("Select中的拉姆达表达式,不支持外部传参数,目前支持的写法 Where(\"1=1\",new {id=1}).Select(it=>{ id=\"" + SqlSugarTool.ParSymbol + "id\".ObjToInt()}");
+                throw new SqlSugarException(ExpNoSupportOutPars);
             }
             return selectStr;
         }
